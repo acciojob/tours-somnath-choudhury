@@ -1,59 +1,63 @@
-import React, { useEffect, useState } from "react";
+import "regenerator-runtime/runtime";
+
+import React, { useState, useEffect } from "react";
+import Loading from "./Loading";
 import Tours from "./Tours";
 
-const App = () => {
-  const [loading, setLoading] = useState(true)
+const url = "https://cors-anywhere.herokuapp.com/https://course-api.com/react-tours-project";
+
+function App() {
+  const [loading, setLoading] = useState(true);
   const [tours, setTours] = useState([]);
 
-  const url = 'https://course-api.com/react-tours-project'
+  const removeTour = (id) => {
+    const newTours = tours.filter((tour) => tour.id !== id);
+    setTours(newTours);
+  };
 
   const fetchTours = async () => {
-    setLoading(true)
+    setLoading(true);
     try {
-      const data = await fetch(url);
-      const tours = await data.json()
+      const response = await fetch(url);
+      const tours = await response.json();
+      setLoading(false);
       setTours(tours);
+    } catch (error) {
+      console.log(error);
+      setLoading(false);
     }
-    catch (error) {
-      console.error('Failed to load tours', error)
-    }
-    setLoading(false)
-  }
+  };
 
   useEffect(() => {
-    fetchTours()
-  }, [])
-
-  const removeTour = (id) => {
-    const newTours = tours.filter((tour) => tour.id !== id)
-    setTours(newTours)
-  }
+    fetchTours();
+  }, []);
 
   if (loading) {
     return (
-      <main id='main'>
-      <p className = 'loading'>Loading...</p>
-    </main>
-    )
-    
+      <main>
+        <Loading />
+      </main>
+    );
   }
 
   if (tours.length === 0) {
     return (
-      <main id='main'>
-      <h2>No more tours to display</h2>
-      <button onClick={fetchTours}>Refresh</button>
-    </main>
-    )
-  }
-    return(
-      <main id="main">
-          <h1 className='title'>Our Tours</h1>
-          {tours.map((tour) => (
-  <Tours key={tour.id} {...tour} removeTour={removeTour} />
-))}
-          
+      <main>
+        <div className="title">
+          <h2>No tours left</h2>
+          <button className="btn" onClick={fetchTours}>
+            Refresh
+          </button>
+        </div>
       </main>
-    )
+    );
+  }
+
+  return (
+    <main>
+      <Tours tours={tours} removeTour={removeTour} />
+    </main>
+  );
 }
+
 export default App;
